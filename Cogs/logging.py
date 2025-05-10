@@ -12,6 +12,7 @@ class Logging(commands.Cog, name="logging"):
         self.bot = bot
         self._last_member = None
     #message delete listener
+
     @commands.Cog.listener()
     async def on_message_delete(self, msg):
         if msg.author.bot:

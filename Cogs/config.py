@@ -142,6 +142,22 @@ class Config(commands.Cog, name = "config"):
         else:
             await ctx.send("Second argument can't be empty and has to be a number not less than 150!")
 
+    @commands.command(name="exposedeleteafter", brief="Set the duration before exposed messages are deleted.",
+                      help="Sets the duration (in hours) after which exposed messages will be automatically deleted. Valid range is between 1 and 24 hours.")
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def expose_message_delete_after(self, ctx, hours=commands.parameter(description="Minimum value: 150 tokens. ")):
+        if hours is not None and 24 >= int(hours) >= 1:
+            hours_num = int(hours)*3600
+            data = load_cfg(cfg_name)
+            data["expose_delete_hours"] = int(hours_num)
+            self.bot.expose_delete_hours = int(hours_num)
+            save_cfg(cfg_name, data)
+            hours_num /= 3600
+            await ctx.send(f"Exposed messages will be deleted after {hours_num} hour/s")
+        else:
+            await ctx.send("Second argument can't be empty and has to be a number between 1 and 24!")
+
     @commands.command(name="chatboton",brief="Toggle AI chatbot functionality.", help="Enables or disables the chatbot feature for the entire server. When enabled, the chatbot will only respond when it is mentioned.")
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)

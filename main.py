@@ -35,6 +35,7 @@ class Bot(commands.Bot):
         self.mute_amount = load_cfg(cfg_name)["mute_amount"]
         self.delete_msg_days = load_cfg(cfg_name)["delete_msg_days"]
         self.server_id = load_cfg(cfg_name)["server_id"]
+        self.expose_delete_hours = load_cfg(cfg_name)["expose_delete_hours"]
         self.bot_read_msg = load_cfg(cfg_name)["bot_read_msg"]
 
         self.chatbot_on = load_cfg(cfg_name)["chatbot_on"]

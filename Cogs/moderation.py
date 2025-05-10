@@ -1,4 +1,5 @@
 import datetime
+import asyncio
 
 from discord.ext import commands
 import re
@@ -12,6 +13,30 @@ class Moderation(commands.Cog, name = "moderation"):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
+        self.expose_messages = {}
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, msg):
+        if msg.author.bot:
+            return
+        if msg.author.id in self.expose_messages:
+            self.expose_messages[msg.author.id]["task"].cancel()
+        async def delete_after():
+            try:
+                await asyncio.sleep(self.bot.expose_delete_hours)
+                self.expose_messages.pop(msg.author.id)
+            except asyncio.CancelledError:
+                pass
+        task=asyncio.create_task(delete_after())
+        self.expose_messages[msg.author.id] = {"task": task, "content": msg.content }
+
+    @commands.command(name="expose", brief="Track and collect deleted messages of a user.",
+                  help="Tracks and collects deleted messages of a specified user to expose them. Provide a mention or ID of the user to start tracking their deleted messages.")
+    @commands.has_permissions(ban_members=True)
+    async def expose_user(self, ctx, member=commands.parameter(description="User to ban (mention or ID).")):
+        userid = re.sub("[<>@]", "", member)
+        #TODO: embed here
+
     @commands.command(name="ban", brief="Ban a user by mention or ID.",
     help="Bans a user from the server using either a mention or a user ID.\n"
          "You can optionally provide a reason. If none is given, 'No reason provided' will be used.") #help when `help ban`, brief when `help`
