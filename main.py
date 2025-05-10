@@ -97,7 +97,7 @@ class Bot(commands.Bot):
         if message.author.bot:
             return
         if self.server_id != message.guild.id and message.author.id != bot.owner_id: # further security measurement
-            await message.channel.send("Server not configured to operate commands, ask owner to use set server command")
+            print("Server not configured to operate commands, ask owner to use set server command")
             return
         await self.process_commands(message)
 
