@@ -224,3 +224,10 @@ def create_scam_links_show_embed(data):
     else:
         embed.description="No links added!"
     return embed
+
+def create_expose_embed(user, content, delete_hours, date):
+    embed = create_embed_base(f"🗑️ Deleted Message", badColor)
+    embed.set_author(icon_url=user.avatar.url, name=user.name)
+    embed.add_field(name="Content:", value=content, inline=False)
+    embed.set_footer(text=f"Deleted at {date} • Removed from cache after {int(delete_hours)} hour(s)")
+    return embed

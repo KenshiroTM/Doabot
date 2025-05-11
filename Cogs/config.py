@@ -154,7 +154,7 @@ class Config(commands.Cog, name = "config"):
             self.bot.expose_delete_hours = int(hours_num)
             save_cfg(cfg_name, data)
             hours_num /= 3600
-            await ctx.send(f"Exposed messages will be deleted after {hours_num} hour/s")
+            await ctx.send(f"Exposed messages will be deleted after {hours_num} hour(s)")
         else:
             await ctx.send("Second argument can't be empty and has to be a number between 1 and 24!")
 

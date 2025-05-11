@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import asyncio
 
 from discord.ext import commands
@@ -28,14 +28,26 @@ class Moderation(commands.Cog, name = "moderation"):
             except asyncio.CancelledError:
                 pass
         task=asyncio.create_task(delete_after())
-        self.expose_messages[msg.author.id] = {"task": task, "content": msg.content }
+        date=datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S")
+        self.expose_messages[msg.author.id] = {"task": task, "content": msg.content, "date": date}
 
-    @commands.command(name="expose", brief="Track and collect deleted messages of a user.",
-                  help="Tracks and collects deleted messages of a specified user to expose them. Provide a mention or ID of the user to start tracking their deleted messages.")
+    @commands.command(name="expose", brief="Track and collect deleted message of an user.",
+                  help="Tracks and collects deleted message of a specified user to expose them. Provide a mention or ID of the user to start tracking their deleted message.")
     @commands.has_permissions(ban_members=True)
-    async def expose_user(self, ctx, member=commands.parameter(description="User to ban (mention or ID).")):
-        userid = re.sub("[<>@]", "", member)
-        #TODO: embed here
+    async def expose_user(self, ctx, member=commands.parameter(description="User to ban (mention or ID).", default=None)):
+        if member is None:
+            user_id = ctx.author.id
+        else:
+            user_id = int(re.sub("[<>@]", "", member))
+        member = ctx.guild.get_member(int(user_id))
+        if member.id in self.expose_messages:
+            exposed_message = self.expose_messages[member.id]["content"]
+            delete_hours = self.bot.expose_delete_hours/3600
+            date = self.expose_messages[member.id]["date"]
+            embed = embedMaker.create_expose_embed(member, exposed_message, delete_hours, date)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"{member.name} has nothing to be exposed of!")
 
     @commands.command(name="ban", brief="Ban a user by mention or ID.",
     help="Bans a user from the server using either a mention or a user ID.\n"
