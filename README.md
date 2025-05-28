@@ -20,7 +20,7 @@ Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON
 - `screen -S your_screen_name`
 
 ### Step 2: Activate the Virtual Environment
-source venv/bin/activate
+- `source venv/bin/activate`
 - `python main.py`
 
 ## Step 3: To detach and return to screen:
