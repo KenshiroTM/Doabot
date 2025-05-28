@@ -18,9 +18,10 @@ Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON
 
 ### Step 1: Start a Screen Session and Run the Bot
 - `screen -S your_screen_name`
-- `python main.py`
+
 ### Step 2: Activate the Virtual Environment
 source venv/bin/activate
+- `python main.py`
 
 ## Step 3: To detach and return to screen:
 - Detach: Ctrl + A, then D
