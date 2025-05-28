@@ -16,11 +16,12 @@ Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON
 
 ## How to Run on Ubuntu
 
-### Step 1: Activate the Virtual Environment
-source venv/bin/activate
-### Step 2: Start a Screen Session and Run the Bot
+### Step 1: Start a Screen Session and Run the Bot
 - `screen -S your_screen_name`
 - `python main.py`
+### Step 2: Activate the Virtual Environment
+source venv/bin/activate
+
 ## Step 3: To detach and return to screen:
 - Detach: Ctrl + A, then D
 - To go back: screen -r
