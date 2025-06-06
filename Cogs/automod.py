@@ -20,16 +20,18 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                     embed = embedMaker.create_blacklisted_word_embed(message, blacklisted_msg)
                     await message.delete()
                     await message.author.ban(reason=f"Banned for using a blacklisted word {blacklisted_msg}", delete_message_days=self.bot.delete_msg_days)
-                    channel = self.bot.get_channel(self.bot.logging_channel)
-                    await channel.send(embed = embed)
+                    if self.bot.logging_on:
+                        channel = self.bot.get_channel(self.bot.logging_channel)
+                        await channel.send(embed = embed)
                     return
                 scam_link_msg = blacklistScript.check_scam_links(message.content)
                 if scam_link_msg is not None:
                     embed = embedMaker.create_scam_link_embed(message, scam_link_msg)
                     await message.delete()
                     await message.author.ban(reason=f"Suspected for scam link", delete_message_days=self.bot.delete_msg_days)
-                    channel = self.bot.get_channel(self.bot.logging_channel)
-                    await channel.send(embed = embed)
+                    if self.bot.logging_on:
+                        channel = self.bot.get_channel(self.bot.logging_channel)
+                        await channel.send(embed = embed)
                     return
 
     # function for blacklist syntax
