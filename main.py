@@ -19,6 +19,8 @@ from Cogs.moderation import Moderation
 from Cogs.leveling import Leveling
 from Cogs.logging import Logging
 from Cogs.config import Config
+from Cogs.linkfixer import Linkfixer
+
 from jsonreader import load_cfg, cfg_name
 from levelingFiles.levelingScript import leveling_cfg, users_cfg
 load_dotenv() # token in a variable
@@ -74,6 +76,7 @@ class Bot(commands.Bot):
         await self.add_cog(Logging(self))
         await self.add_cog(Config(self))
         await self.add_cog(Chatbot(self))
+        await self.add_cog(Linkfixer(self))
 
         for guild in bot.guilds:
             if bot.server_id == guild.id:
