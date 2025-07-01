@@ -7,7 +7,7 @@ json_files = [
     'levelingFiles/users.json',
     'warns/warns.json',
     'config.json',
-    'linkfixer/links.json'
+    'linkfix/links.json'
 ]
 
 default_data = [
@@ -15,8 +15,8 @@ default_data = [
     {"leveling_on": False, "exp_per_msg": 10, "level_scaling": 1.2, "base_lvl_exp": 100, "level_roles": []},
     {"users": []},
     {"users": []},
-    {"Version": "1.0.0", "server_id": 713475017957965945, "delete_msg_days": 7, "mute_amount": 2, "prefix": "^", "logging_channel": 1264171411296227370, "logging_on": False, "blacklist_on": False, "chatbot_on": False, "bot_max_tokens": 150, "last_bans": [], "bot_read_msg": 10, "expose_delete_hours": 1},
-    {"usableLinks": []}
+    {"Version": "1.0.0", "server_id": 713475017957965945, "delete_msg_days": 7, "mute_amount": 2, "prefix": "^", "logging_channel": 1264171411296227370, "logging_on": False, "blacklist_on": False, "chatbot_on": False, "linkfixer_on":False,"bot_max_tokens": 150, "last_bans": [], "bot_read_msg": 10, "expose_delete_hours": 1},
+    {"sites": {"instagram": [] }}
 ]
 
 def mass_check_variables():

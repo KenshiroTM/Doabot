@@ -46,6 +46,8 @@ class Bot(commands.Bot):
         self.blacklist_on = load_cfg(cfg_name)["blacklist_on"]
         self.leveling_on = load_cfg(leveling_cfg)["leveling_on"]
 
+        self.linkfixer_on = load_cfg(cfg_name)["linkfixer_on"]
+
         self.user_levels = load_cfg(users_cfg)
 
     # on command errors
