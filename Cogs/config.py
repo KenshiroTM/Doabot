@@ -174,6 +174,23 @@ class Config(commands.Cog, name = "config"):
             await ctx.send("Chatbot is now **on**")
         save_cfg(cfg_name, data)
 
+    @commands.command(name="linkfixeron", brief="Toggle link fixer functionality.",
+                      help=f"Enables or disables the link fix feature for the entire server. You can use {prefix}help linkfixer for more info")
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def linkfixer_on(self, ctx):
+        data = load_cfg(cfg_name)
+        if data["linkfixer_on"] is True:
+            data["linkfixer_on"] = False
+            self.bot.chatbot_on = False
+            save_cfg(cfg_name, data)
+            await ctx.send("Link fixer is now **off**")
+        else:
+            data["linkfixer_on"] = True
+            self.bot.chatbot_on = True
+            await ctx.send("Link fixer is now **on**")
+        save_cfg(cfg_name, data)
+
     @commands.command(name="setserver", brief="Restrict bot to this server (owner only).", help="Restricts the bot so it can only operate in this server. Use this to prevent bot abuse if hosted publicly.")
     @commands.is_owner()
     async def set_server(self, ctx):
