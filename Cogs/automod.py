@@ -22,6 +22,8 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                     await message.author.ban(reason=f"Banned for using a blacklisted word {blacklisted_msg}", delete_message_days=self.bot.delete_msg_days)
                     if self.bot.logging_on:
                         channel = self.bot.get_channel(self.bot.logging_channel)
+                        if channel:
+                            await channel(embed=embed)
                         await channel.send(embed = embed)
                     return
                 scam_link_msg = blacklistScript.check_scam_links(message.content)
@@ -31,7 +33,8 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                     await message.author.ban(reason=f"Suspected for scam link", delete_message_days=self.bot.delete_msg_days)
                     if self.bot.logging_on:
                         channel = self.bot.get_channel(self.bot.logging_channel)
-                        await channel.send(embed = embed)
+                        if channel:
+                            await channel.send(embed = embed)
                     return
 
     # function for blacklist syntax
@@ -61,7 +64,7 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
             await ctx.send("Specify case for sensitive or insensitive `s/i`")
             return
 
-        if word is None:
+        if not word.strip():
             await ctx.send("Please put a word you want to add!")
             return
 
@@ -125,18 +128,21 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                            *, keywords=commands.parameter(description="Space-separated list of keywords to match in messages.", default=None)):
         if name is None or threshold is None or keywords is None:
             return await ctx.send("All arguments have to be filled!")
-        if int(threshold)>=2:
-            link = {
-                "name": name,
-                "threshold": int(threshold),
-                "keywords": keywords.split()
-            }
-            if blacklistScript.add_blacklisted_link(link) is True:
-                await ctx.send("Successfully added a link!")
+        try:
+            if int(threshold)>=2:
+                link = {
+                    "name": name,
+                    "threshold": int(threshold),
+                    "keywords": keywords.split()
+                }
+                if blacklistScript.add_blacklisted_link(link) is True:
+                    await ctx.send("Successfully added a link!")
+                else:
+                    await ctx.send("Name already in database!")
             else:
-                await ctx.send("Name already in database!")
-        else:
-            await ctx.send("Threshold must be a number not less than 2!")
+                await ctx.send("Threshold must be a number not less than 2!")
+        except ValueError:
+            return await ctx.send("Threshold must be a valid number!")
 
     @link.command(name="rm", help="Removes an existing spam link rule by its name.")
     @commands.has_permissions(ban_members=True)

@@ -18,7 +18,7 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def prefix(self, ctx, prefix=commands.parameter(default=None, description="New prefix character (1 character only)")):
-        if prefix is not None or len(prefix) != 1:
+        if prefix is not None and len(prefix) == 1:
             data = load_cfg(cfg_name)
             data["prefix"] = str(prefix)
             self.bot.command_prefix = prefix
@@ -33,14 +33,17 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def mute_amount(self, ctx, amount=commands.parameter(default=None, description="Default mute duration in hours. Minimum 1")):
-        if amount is not None and int(amount)>=1:
-            data = load_cfg(cfg_name)
-            data["mute_amount"] = int(amount)
-            self.bot.mute_amount = int(amount)
-            save_cfg(cfg_name, data)
-            await ctx.send(f"Mute amount set to {amount} hours!")
-        else:
-            await ctx.send("Second argument can't be empty and has to be a number not less than 1!")
+        try:
+            if amount is not None and int(amount)>=1:
+                data = load_cfg(cfg_name)
+                data["mute_amount"] = int(amount)
+                self.bot.mute_amount = int(amount)
+                save_cfg(cfg_name, data)
+                await ctx.send(f"Mute amount set to {amount} hours!")
+            else:
+                await ctx.send("Second argument can't be empty and has to be a number not less than 1!")
+        except TypeError:
+            await ctx.send("Enter a valid number!")
 
     @commands.command(name="deletemsgdays", brief="Set message deletion window for bans.", help="Specifies how many days of messages to delete when banning a user (0–7).")
     @commands.has_permissions(ban_members=True)
@@ -175,19 +178,19 @@ class Config(commands.Cog, name = "config"):
         save_cfg(cfg_name, data)
 
     @commands.command(name="linkfixeron", brief="Toggle link fixer functionality.",
-                      help=f"Enables or disables the link fix feature for the entire server. You can use {prefix}help linkfixer for more info")
+                      help="Enables or disables the link fix feature for the entire server. Run the help command for more info.")
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def linkfixer_on(self, ctx):
         data = load_cfg(cfg_name)
         if data["linkfixer_on"] is True:
             data["linkfixer_on"] = False
-            self.bot.chatbot_on = False
+            self.bot.linkfixer_on= False
             save_cfg(cfg_name, data)
             await ctx.send("Link fixer is now **off**")
         else:
             data["linkfixer_on"] = True
-            self.bot.chatbot_on = True
+            self.bot.linkfixer_on = True
             await ctx.send("Link fixer is now **on**")
         save_cfg(cfg_name, data)
 

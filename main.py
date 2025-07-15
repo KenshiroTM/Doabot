@@ -66,7 +66,7 @@ class Bot(commands.Bot):
             await ctx.send("Mentioned role is not found!")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send("Command is on cooldown!")
-        elif isinstance(error, commands.CommandNotFound):
+        elif isinstance(error, commands.CommandNotFound): # do not type anything back
             return
         else:
             await ctx.send("An error has occurred while executing this command!")
@@ -78,9 +78,9 @@ class Bot(commands.Bot):
         await self.add_cog(Logging(self))
         await self.add_cog(Config(self))
         await self.add_cog(Chatbot(self))
-        await self.add_cog(Linkfixer(self))
+        await self.add_cog(Linkfixer(self)) # adding cogs in the script
 
-        for guild in bot.guilds:
+        for guild in bot.guilds: # this code checks and cleans up any user that left the server on startup
             if bot.server_id == guild.id:
                 #cleaning users
                 warn_data = load_cfg(warns.warnsScript.warns_name)
@@ -93,7 +93,9 @@ class Bot(commands.Bot):
                         warns.warnsScript.remove_user(warn_user["user_id"]) #same as with leveling
                 print("clearing non existent users...")
         #checks for users
+
         activity = discord.Game(name=f"Prefix is {self.command_prefix}")
+
         await bot.change_presence(status=discord.Status.online, activity=activity)
         print("Ready!")
 
@@ -102,7 +104,7 @@ class Bot(commands.Bot):
         #if a bot then ignore
         if message.author.bot:
             return
-        if self.server_id != message.guild.id and message.author.id != bot.owner_id: # further security measurement
+        if self.server_id != message.guild.id and message.author.id != bot.owner_id: # further security measurement in case someone tries to invite my bot
             print("Server not configured to operate commands, ask owner to use set server command")
             return
         await self.process_commands(message)
