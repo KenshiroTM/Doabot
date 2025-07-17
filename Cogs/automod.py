@@ -8,6 +8,8 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
+        self.keyword_match_threshold = 2
+
     @commands.Cog.listener()
     async def on_message(self, message):
         # if a bot then ignore
@@ -129,7 +131,7 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
         if name is None or threshold is None or keywords is None:
             return await ctx.send("All arguments have to be filled!")
         try:
-            if int(threshold)>=2:
+            if int(threshold)>=self.keyword_match_threshold:
                 link = {
                     "name": name,
                     "threshold": int(threshold),

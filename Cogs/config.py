@@ -10,6 +10,14 @@ class Config(commands.Cog, name = "config"):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
+        self.min_muteamount = 1
+        self.min_delete_msg_days = 0
+        self.max_delete_msg_days = 7
+        self.min_read_msg_amount = 10
+        self.bot_max_tokens = 150
+        self.max_expose_msg_time = 24
+        self.min_expose_msg_time = 1
+
     @commands.command(name="prefix",brief="Set the command prefix for the bot.",
     help=("Sets the prefix the bot responds to.\n\n"
          "Usage: `prefix <symbol>`\n"
@@ -34,7 +42,7 @@ class Config(commands.Cog, name = "config"):
     @commands.bot_has_permissions(ban_members=True)
     async def mute_amount(self, ctx, amount=commands.parameter(default=None, description="Default mute duration in hours. Minimum 1")):
         try:
-            if amount is not None and int(amount)>=1:
+            if amount is not None and int(amount)>=self.min_muteamount:
                 data = load_cfg(cfg_name)
                 data["mute_amount"] = int(amount)
                 self.bot.mute_amount = int(amount)
@@ -49,7 +57,7 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def delete_msg_days(self, ctx, days=commands.parameter(default=None, description="Number of days to delete messages (0–7)")):
-        if days is not None and 0 <= int(days) <= 7:
+        if days is not None and self.min_delete_msg_days <= int(days) <= self.max_delete_msg_days:
             data = load_cfg(cfg_name)
             data["delete_msg_days"] = int(days)
             self.bot.delete_msg_days = int(days)
@@ -123,7 +131,7 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def read_msg(self, ctx, msg_amount=commands.parameter(description="Must be 10 or more.")):
-        if msg_amount is not None and int(msg_amount)>=10:
+        if msg_amount is not None and int(msg_amount)>=self.min_read_msg_amount:
             data = load_cfg(cfg_name)
             data["bot_read_msg"] = int(msg_amount)
             self.bot.bot_read_msg = int(msg_amount)
@@ -136,7 +144,7 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def max_tokens(self, ctx, max_tokens=commands.parameter(description="Minimum value: 150 tokens. ")):
-        if max_tokens is not None and int(max_tokens)>=150:
+        if max_tokens is not None and int(max_tokens)>=self.bot_max_tokens:
             data = load_cfg(cfg_name)
             data["bot_max_tokens"] = int(max_tokens)
             self.bot.bot_max_tokens = int(max_tokens)
@@ -150,7 +158,7 @@ class Config(commands.Cog, name = "config"):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def expose_message_delete_after(self, ctx, hours=commands.parameter(description="Value between 24 and 1")):
-        if hours is not None and 24 >= int(hours) >= 1:
+        if hours is not None and self.max_expose_msg_time >= int(hours) >= self.min_expose_msg_time:
             hours_num = int(hours)*3600
             data = load_cfg(cfg_name)
             data["expose_delete_hours"] = int(hours_num)

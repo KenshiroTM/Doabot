@@ -14,6 +14,10 @@ class Moderation(commands.Cog, name = "moderation"):
         self.bot = bot
         self._last_member = None
         self.expose_messages = {}
+        self.min_revert_users = 1
+        self.max_revert_users = 3
+        self.min_purge_msgs = 1
+        self.max_purge_msgs = 100
 
     @commands.Cog.listener()
     async def on_message_delete(self, msg):
@@ -87,7 +91,7 @@ class Moderation(commands.Cog, name = "moderation"):
     @commands.bot_has_permissions(ban_members=True)
     async def ban_rev(self, ctx, second_arg=commands.parameter(default=1, description="Position in recent bans list (1 = most recent, up to 3)")):
         data = load_cfg(cfg_name)
-        if 1 <= second_arg <= 3:
+        if self.min_revert_users <= second_arg <= self.max_revert_users:
             array_place = len(data["last_bans"]) - second_arg
 
             userid = data["last_bans"][array_place]["userid"] #userid of user from recent bans config file
@@ -205,7 +209,7 @@ class Moderation(commands.Cog, name = "moderation"):
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge_messages(self, ctx, amount=commands.parameter(description="Number of messages to delete (1-100)")):
-        if 1<= int(amount) <=100:
+        if self.min_purge_msgs <= int(amount) <= self.max_purge_msgs:
             await ctx.channel.purge(limit=int(amount)+1)
             await ctx.send(f"Deleted {amount} messages!", delete_after=3)
 

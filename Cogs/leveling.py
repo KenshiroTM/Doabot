@@ -12,6 +12,11 @@ class Leveling(commands.Cog, name = "leveling"):
         self._last_member = None
         self.recalculating = False
         self.autosave_levels.start()
+        self.min_user_level = 0
+        self.min_lvl_scaling = 1
+        self.min_base_level = 1
+        self.min_exp_per_lvl = 1
+        self.min_required_lvl = 1
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -60,7 +65,7 @@ class Leveling(commands.Cog, name = "leveling"):
         userid = re.sub("[<>@]", "", member)  # userid
         member = ctx.guild.get_member(int(userid))
 
-        if int(userid) and int(lvl)>=0 and self.recalculating==False:
+        if int(userid) and int(lvl)>=self.min_user_level and self.recalculating==False:
             # setting level and putting it into config
             levelingScript.set_user_level(int(lvl), int(userid), self.bot.user_levels)
             user_level = levelingScript.get_user_info(int(userid), self.bot.user_levels)
@@ -82,7 +87,7 @@ class Leveling(commands.Cog, name = "leveling"):
          "This recalculates all user levels.")
     @commands.has_permissions(manage_roles=True)
     async def set_lvl_scaling(self, ctx, lvl_scaling=commands.parameter(description="A decimal number used as EXP scaling factor (e.g., 1.25). Has to be not less than 1")):
-        if float(lvl_scaling)>1 and not self.recalculating:
+        if float(lvl_scaling)>self.min_lvl_scaling and not self.recalculating:
             self.recalculating = True
             await ctx.send("Changing level formula for existing users, it might take a while...")
             levelingScript.set_level_scaler(float(lvl_scaling), self.bot.user_levels)
@@ -100,7 +105,7 @@ class Leveling(commands.Cog, name = "leveling"):
          "This defines the EXP curve starting point and recalculates all levels.")
     @commands.has_permissions(manage_roles=True)
     async def set_base_lvl_exp(self, ctx, base_lvl=commands.parameter(description="Number of EXP points required to reach level 1. Has to be not less than 1")):
-        if int(base_lvl)>=1 and not self.recalculating:
+        if int(base_lvl)>=self.min_base_level and not self.recalculating:
             self.recalculating = True
             await ctx.send("Changing level formula for existing users, it might take a while...")
             levelingScript.set_base_level_exp(int(base_lvl), self.bot.user_levels)
@@ -118,7 +123,7 @@ class Leveling(commands.Cog, name = "leveling"):
          "Helps control how fast users can level up.")
     @commands.has_permissions(manage_roles=True)
     async def set_xp_gain(self, ctx, xp_per_msg=commands.parameter(description="Flat EXP gained per message (integer). Has to be not less than 1")):
-        if int(xp_per_msg)>=1 and self.recalculating==False:
+        if int(xp_per_msg)>=self.min_exp_per_lvl and self.recalculating==False:
             levelingScript.set_exp_gained(int(xp_per_msg))
             await ctx.send(f"Set exp gained to **{xp_per_msg}**")
         elif self.recalculating:
@@ -143,7 +148,7 @@ class Leveling(commands.Cog, name = "leveling"):
     async def lvl_role_add(self, ctx, role=commands.parameter(description="Role to assign (mention or ID)."),
                            required_level=commands.parameter(description="Minimum level required to receive the role (integer). Has to be not less than 1")):
         role_id = re.sub("[<>@&]", "", role)
-        if int(role_id) and int(required_level)>=1 and not self.recalculating:
+        if int(role_id) and int(required_level)>=self.min_required_lvl and not self.recalculating:
             if levelingScript.add_level_role(int(required_level), int(role_id)):
                 await ctx.send(f"Added {ctx.guild.get_role(int(role_id)).name} to leveling database with required level of {required_level}")
             else:

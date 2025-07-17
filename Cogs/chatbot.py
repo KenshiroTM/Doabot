@@ -21,7 +21,6 @@ class Chatbot(commands.Cog, name = "link fixer"):
                 max_tokens=response_length,
                 temperature=1
             )
-            print(output)
             return output.message.content[0].text
         except Exception as e:
             print(e)
