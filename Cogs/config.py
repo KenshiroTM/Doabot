@@ -149,7 +149,7 @@ class Config(commands.Cog, name = "config"):
                       help="Sets the duration (in hours) after which exposed messages will be automatically deleted. Valid range is between 1 and 24 hours.")
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def expose_message_delete_after(self, ctx, hours=commands.parameter(description="Minimum value: 150 tokens. ")):
+    async def expose_message_delete_after(self, ctx, hours=commands.parameter(description="Value between 24 and 1")):
         if hours is not None and 24 >= int(hours) >= 1:
             hours_num = int(hours)*3600
             data = load_cfg(cfg_name)
