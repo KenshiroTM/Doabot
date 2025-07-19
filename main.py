@@ -47,6 +47,7 @@ class Bot(commands.Bot):
         self.leveling_on = load_cfg(leveling_cfg)["leveling_on"]
 
         self.linkfixer_on = load_cfg(cfg_name)["linkfixer_on"]
+        self.instagram_fixer_idx = load_cfg(cfg_name)["instagram_fixer_idx"]
 
         self.user_levels = load_cfg(users_cfg)
 
@@ -66,6 +67,7 @@ class Bot(commands.Bot):
             await ctx.send("Mentioned role is not found!")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send("Command is on cooldown!")
+            return
         elif isinstance(error, commands.CommandNotFound): # do not type anything back
             return
         else:
