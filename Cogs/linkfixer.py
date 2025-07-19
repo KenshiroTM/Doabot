@@ -20,12 +20,13 @@ class Linkfixer(commands.Cog, name = "linkfix"): #put all auto mod stuff here
             await message.delete()
             link = self.bot_instagram_fixer[self.bot.instagram_fixer_idx]
             swapped_reel = message.content.replace("www.instagram.com", f"www.{link}.com")
-            reply_link = f"**Sent by {message.author}**\n{swapped_reel} \nEmbed does not work? Use `{self.bot.command_prefix}swap` to change embed domain (2 second cooldown)"
+            reply_link = f"**Sent by {message.author}**\n{swapped_reel} \nEmbed does not work? Use `{self.bot.command_prefix}swap` to change embed link (3 second cooldown per use)"
             await message.channel.send(reply_link)
 
     @commands.command()
-    @commands.cooldown(rate=1, per=2, type=commands.BucketType.default)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.default)
     async def swap(self, ctx):
+        await ctx.message.delete()
         previous_link = self.bot_instagram_fixer[self.bot.instagram_fixer_idx] #previous link
 
         if self.bot.instagram_fixer_idx==len(self.bot_instagram_fixer)-1: # move through indexes
