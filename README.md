@@ -33,3 +33,6 @@ Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON
 - `git status`: checks if cloned repo is up to date
 - `screen -ls`: shows all the running screens in ubuntu
 - `htop`: task manager diagnostic screen
+
+## CAUTION
+You are most likely needed to be logged in as a root
