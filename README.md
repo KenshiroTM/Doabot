@@ -14,6 +14,8 @@
 
 Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON structure.
 
+To install all libraries use `pip install -r requirements.txt`
+
 ## How to Run on Ubuntu
 
 ### Step 1: Start a Screen Session and Run the Bot
