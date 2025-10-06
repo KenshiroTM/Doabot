@@ -1,3 +1,5 @@
+import asyncio
+
 from discord.ext import commands
 
 import embedMaker
@@ -9,12 +11,39 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
         self.bot = bot
         self._last_member = None
         self.keyword_match_threshold = 2
+        self.potential_spammers = []
+
+    async def quick_delete(self, new_spammer): # just delete in function
+        try:
+            await asyncio.sleep(3)
+            self.potential_spammers.remove(new_spammer)
+            print(self.potential_spammers)
+        except asyncio.CancelledError:
+            pass
 
     @commands.Cog.listener()
     async def on_message(self, message):
         # if a bot then ignore
         if message.author.bot:
             return
+        if any(x in message.content for x in ["https://", "@everyone"]): # shorter checking from range of options
+            if not message.author.guild_permissions.ban_members:
+                new_spammer = {"userid":message.author.id, "content":message.content, "channel_id":message.channel.id} # make object of spammer
+
+                for spammer in self.potential_spammers: #for each spammer in cache
+                    if spammer["userid"] == new_spammer["userid"]: #if the same author AND message
+                        if spammer["channel_id"] != new_spammer["channel_id"] and spammer["content"] == new_spammer["content"]:
+                            await message.delete() #if different channel and the same content (spams to other channels) then do ban
+                            await message.author.ban(reason=f"Banned for suspected spam!", delete_message_days=self.bot.delete_msg_days)
+                            print("spammer detected!")
+                            return
+                        return #return so it does not append even if it finds the same author
+
+                self.potential_spammers.append(new_spammer)
+                asyncio.create_task(self.quick_delete(new_spammer)) #task to delete after some time
+                print(self.potential_spammers)
+        # CODE ABOVE CHECKS IF THE SAME MESSAGE APPEARED IN A SHORT TIME IN DIFFERENT CHANNELS, PRETTY MUCH HOW SPAM BOTS WORK
+
         if self.bot.blacklist_on: #checks if blacklist is on
             if not message.author.guild_permissions.ban_members: #check if it has ban members permissions, if it does then don't do anything
                 blacklisted_msg = blacklistScript.check_blacklist(message.content) # get word from blacklist, if no word found then return "None"
