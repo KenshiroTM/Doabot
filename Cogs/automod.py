@@ -26,16 +26,14 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
         # if a bot then ignore
         if message.author.bot:
             return
-        if any(x in message.content for x in ["https://", "@everyone"]): # shorter checking from range of options
-            if not message.author.guild_permissions.ban_members:
+        if not message.author.guild_permissions.ban_members:
+            if any(x in message.content for x in ["https://", "@everyone"]): # shorter checking from range of options
                 new_spammer = {"userid":message.author.id, "content":message.content, "channel_id":message.channel.id} # make object of spammer
-
                 for spammer in self.potential_spammers: #for each spammer in cache
                     if spammer["userid"] == new_spammer["userid"]: #if the same author AND message
                         if spammer["channel_id"] != new_spammer["channel_id"] and spammer["content"] == new_spammer["content"]:
                             await message.delete() #if different channel and the same content (spams to other channels) then do ban
                             await message.author.ban(reason=f"Banned for suspected spam!", delete_message_days=self.bot.delete_msg_days)
-                            print("spammer detected!")
                             return
                         return #return so it does not append even if it finds the same author
 
