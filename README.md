@@ -36,9 +36,5 @@ To install all libraries use `pip install -r requirements.txt`
 - `screen -ls`: shows all the running screens in ubuntu
 - `htop`: task manager diagnostic screen
 
-## Updating a bot after git push:
-- Go into the bot folder and execute `git pull`
-- If need to check for updates, execute `git status`
-
 ## CAUTION
 You are most likely needed to be logged in as a root
