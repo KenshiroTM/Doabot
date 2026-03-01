@@ -36,7 +36,6 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                             await message.author.ban(reason=f"Banned for suspected spam!", delete_message_days=self.bot.delete_msg_days)
                             return
                         return #return so it does not append even if it finds the same author
-
                 self.potential_spammers.append(new_spammer)
                 asyncio.create_task(self.quick_delete(new_spammer)) #task to delete after some time
                 print(self.potential_spammers)

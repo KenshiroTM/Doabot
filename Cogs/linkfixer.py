@@ -10,18 +10,25 @@ class Linkfixer(commands.Cog, name = "linkfix"): #put all auto mod stuff here
         self._last_member = None
         self.bot_instagram_fixer = ["instagramez", "ddinstagram", "kkinstagram"]
         self.bot_instagram_link = "https://www.instagram.com"
+        self.bot_twitter_fixer = "fixupx"
+        self.bot_twitter_link = "https://x.com/"
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot:
             return
-        if self.bot_instagram_link in message.content and self.bot.linkfixer_on is True:
-            print(self.bot.instagram_fixer_idx)
-            await message.delete()
-            link = self.bot_instagram_fixer[self.bot.instagram_fixer_idx]
-            swapped_reel = message.content.replace("www.instagram.com", f"www.{link}.com")
-            reply_link = f"**Sent by {message.author}**\n{swapped_reel} \nEmbed does not work? Use `{self.bot.command_prefix}swap` to change embed link (3 second cooldown per use)"
-            await message.channel.send(reply_link)
+        if self.bot.linkfixer_on is True:
+            reply_link = ""
+            if self.bot_instagram_link in message.content:
+                link = self.bot_instagram_fixer[self.bot.instagram_fixer_idx]
+                swapped_reel = message.content.replace("www.instagram.com", f"www.{link}.com")
+                reply_link = f"**Sent by {message.author}**\n{swapped_reel} \nEmbed does not work? Use `{self.bot.command_prefix}swap` to change embed link (3 second cooldown per use)"
+            if self.bot_twitter_link in message.content:
+                swapped_link = message.content.replace("www.x.com", f"www.{self.bot_twitter_fixer}.com")
+                reply_link = f"**Sent by {message.author}**\n{swapped_link}"
+            if reply_link != "":
+                await message.delete()
+                await message.channel.send(reply_link)
 
     @commands.command()
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.default)
