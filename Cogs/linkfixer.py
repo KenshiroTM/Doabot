@@ -11,7 +11,7 @@ class Linkfixer(commands.Cog, name = "linkfix"): #put all auto mod stuff here
         self.bot_instagram_fixer = ["instagramez", "ddinstagram", "kkinstagram"]
         self.bot_instagram_link = "https://www.instagram.com"
         self.bot_twitter_fixer = "fixupx"
-        self.bot_twitter_link = "https://x.com/"
+        self.bot_twitter_link = "https://x.com"
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -21,10 +21,12 @@ class Linkfixer(commands.Cog, name = "linkfix"): #put all auto mod stuff here
             reply_link = ""
             if self.bot_instagram_link in message.content:
                 link = self.bot_instagram_fixer[self.bot.instagram_fixer_idx]
-                swapped_reel = message.content.replace("www.instagram.com", f"www.{link}.com")
+                swapped_reel = message.content.replace(self.bot_instagram_link, f"https://www.{link}.com")
                 reply_link = f"**Sent by {message.author}**\n{swapped_reel} \nEmbed does not work? Use `{self.bot.command_prefix}swap` to change embed link (3 second cooldown per use)"
             if self.bot_twitter_link in message.content:
-                swapped_link = message.content.replace("www.x.com", f"www.{self.bot_twitter_fixer}.com")
+                print(self.bot_twitter_fixer)
+                swapped_link = message.content.replace(self.bot_twitter_link, f"https://{self.bot_twitter_fixer}.com")
+                print(swapped_link)
                 reply_link = f"**Sent by {message.author}**\n{swapped_link}"
             if reply_link != "":
                 await message.delete()
