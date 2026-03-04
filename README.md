@@ -10,11 +10,30 @@
 - [`python-dotenv`](https://pypi.org/project/python-dotenv/) `v1.0.1`
 - [`cohere`](https://pypi.org/project/cohere/) `v5.15`
 
+## Python Version
+- Python 3.12
+
 ## Info
 
 Edit the `jsonChecker.py` file if you want to add extra variables or modify JSON structure.
 
-To install all libraries use `pip install -r requirements.txt`
+## Installation
+
+### Using pip
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Using Conda
+
+```bash
+conda create -n Doabot python=3.12
+conda activate Doabot
+pip install -r requirements.txt
+```
 
 ## How to Run on Ubuntu
 
