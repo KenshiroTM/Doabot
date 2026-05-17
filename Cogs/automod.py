@@ -15,7 +15,7 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
 
     async def quick_delete(self, new_spammer): # just delete in function
         try:
-            await asyncio.sleep(3)
+            await asyncio.sleep(self.bot.spammer_timeout)
             self.potential_spammers.remove(new_spammer)
             print(self.potential_spammers)
         except asyncio.CancelledError:
@@ -24,22 +24,38 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
     @commands.Cog.listener()
     async def on_message(self, message):
         # if a bot then ignore
-        if message.author.bot:
-            return
-        if not message.author.guild_permissions.ban_members:
-            if any(x in message.content for x in ["https://", "@everyone"]): # shorter checking from range of options
-                new_spammer = {"userid":message.author.id, "content":message.content, "channel_id":message.channel.id} # make object of spammer
-                for spammer in self.potential_spammers: #for each spammer in cache
-                    if spammer["userid"] == new_spammer["userid"]: #if the same author AND message
-                        if spammer["channel_id"] != new_spammer["channel_id"] and spammer["content"] == new_spammer["content"]:
-                            await message.delete() #if different channel and the same content (spams to other channels) then do ban
-                            await message.author.ban(reason=f"Banned for suspected spam!", delete_message_days=self.bot.delete_msg_days)
+        if self.bot.antispam_on:
+            if message.author.bot:
+                return
+            if not message.author.guild_permissions.ban_members:
+                has_image = any(
+                    att.content_type and att.content_type.startswith("image/")
+                    for att in message.attachments
+                )
+                has_text_spam = any(x in message.content for x in ["https://", "http://", "@everyone", "@here"])
+                if has_text_spam or has_image:
+                    content_key = message.content
+                    if not content_key and message.attachments:
+                        content_key = message.attachments[0].filename
+
+                    new_spammer = {
+                        "userid": message.author.id,
+                        "content": content_key,
+                        "channel_id": message.channel.id
+                    }
+                    for spammer in self.potential_spammers:
+                        if spammer["userid"] == new_spammer["userid"]:
+                            if spammer["channel_id"] != new_spammer["channel_id"] and spammer["content"] == new_spammer[
+                                "content"]:
+                                await message.delete()
+                                await message.author.ban(reason=f"Banned for suspected spam!",
+                                                         delete_message_days=self.bot.delete_msg_days)
+                                return
                             return
-                        return #return so it does not append even if it finds the same author
-                self.potential_spammers.append(new_spammer)
-                asyncio.create_task(self.quick_delete(new_spammer)) #task to delete after some time
-                print(self.potential_spammers)
-        # CODE ABOVE CHECKS IF THE SAME MESSAGE APPEARED IN A SHORT TIME IN DIFFERENT CHANNELS, PRETTY MUCH HOW SPAM BOTS WORK
+                    self.potential_spammers.append(new_spammer)
+                    asyncio.create_task(self.quick_delete(new_spammer))
+                    print(self.potential_spammers)
+            # CODE ABOVE CHECKS IF THE SAME MESSAGE APPEARED IN A SHORT TIME IN DIFFERENT CHANNELS, PRETTY MUCH HOW SPAM BOTS WORK
 
         if self.bot.blacklist_on: #checks if blacklist is on
             if not message.author.guild_permissions.ban_members: #check if it has ban members permissions, if it does then don't do anything

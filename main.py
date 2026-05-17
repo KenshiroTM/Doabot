@@ -49,6 +49,8 @@ class Bot(commands.Bot):
         self.linkfixer_on = load_cfg(cfg_name)["linkfixer_on"]
         self.instagram_fixer_idx = load_cfg(cfg_name)["instagram_fixer_idx"]
 
+        self.antispam_on = load_cfg(cfg_name)["antispam_on"]
+        self.spammer_timeout = load_cfg(cfg_name)["spammer_timeout"]
         self.user_levels = load_cfg(users_cfg)
 
     # on command errors

@@ -202,6 +202,43 @@ class Config(commands.Cog, name = "config"):
             await ctx.send("Link fixer is now **on**")
         save_cfg(cfg_name, data)
 
+    @commands.command(name="antispamon", brief="Toggle anti-spam functionality.",
+                      help="Enables or disables the anti-spam feature for the entire server.")
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def antispam_on(self, ctx):
+        data = load_cfg(cfg_name)
+        if data.get("antispam_on", False) is True:
+            data["antispam_on"] = False
+            self.bot.antispam_on = False
+            await ctx.send("Anti-spam is now **off**")
+        else:
+            data["antispam_on"] = True
+            self.bot.antispam_on = True
+            await ctx.send("Anti-spam is now **on**")
+        save_cfg(cfg_name, data)
+
+    @commands.command(name="spamtimeout", brief="Set anti-spam timeout.",
+                      help="Sets how long (in seconds) a potential spammer stays in cache before being removed. Default is 4.")
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    async def spam_timeout(self, ctx,
+                           seconds: int = commands.parameter(description="Timeout in seconds (min 3, max 20).",
+                                                             default=None)):
+        if seconds is None:
+            await ctx.send(f"Current spam timeout: **{self.spammer_timeout}s**")
+            return
+
+        if seconds < 3 or seconds > 20:
+            await ctx.send("Timeout must be between **3** and **20** seconds!")
+            return
+
+        data = load_cfg(cfg_name)
+        data["spammer_timeout"] = seconds
+        self.bot.spammer_timeout = seconds
+        save_cfg(cfg_name, data)
+        await ctx.send(f"Spam timeout set to **{seconds}s**")
+
     @commands.command(name="setserver", brief="Restrict bot to this server (owner only).", help="Restricts the bot so it can only operate in this server. Use this to prevent bot abuse if hosted publicly.")
     @commands.is_owner()
     async def set_server(self, ctx):
