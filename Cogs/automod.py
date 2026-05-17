@@ -13,12 +13,15 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
         self.keyword_match_threshold = 2
         self.potential_spammers = []
 
-    async def quick_delete(self, new_spammer): # just delete in function
+    async def quick_delete(self, new_spammer):
         try:
             await asyncio.sleep(self.bot.spammer_timeout)
-            self.potential_spammers.remove(new_spammer)
-            print(self.potential_spammers)
         except asyncio.CancelledError:
+            return
+
+        try:
+            self.potential_spammers.remove(new_spammer)
+        except ValueError:
             pass
 
     @commands.Cog.listener()
@@ -50,11 +53,12 @@ class Automod(commands.Cog, name = "automod"): #put all auto mod stuff here
                                 await message.delete()
                                 await message.author.ban(reason=f"Banned for suspected spam!",
                                                          delete_message_days=self.bot.delete_msg_days)
+
+                                self.potential_spammers[:] = [x for x in self.potential_spammers if x["userid"] != message.author.id] # remove entries that match the spammer
                                 return
                             return
                     self.potential_spammers.append(new_spammer)
                     asyncio.create_task(self.quick_delete(new_spammer))
-                    print(self.potential_spammers)
             # CODE ABOVE CHECKS IF THE SAME MESSAGE APPEARED IN A SHORT TIME IN DIFFERENT CHANNELS, PRETTY MUCH HOW SPAM BOTS WORK
 
         if self.bot.blacklist_on: #checks if blacklist is on
