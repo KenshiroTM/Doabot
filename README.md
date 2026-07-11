@@ -37,22 +37,24 @@ pip install -r requirements.txt
 
 ## How to Run on Ubuntu
 
-### Step 1: Start a Screen Session and Run the Bot
-- `screen -S your_screen_name`
+## Step 1: Start a Screen Session and Run the Bot
+- `screen -S your_screen_name` or `tmux new -s your_screen_name`
 
-### Step 2: Activate the Virtual Environment
+## Step 2: Activate the Virtual Environment
 - `source venv/bin/activate`
 - `python main.py`
 
 ## Step 3: To detach and return to screen:
-- Detach: Ctrl + A, then D
-- To go back: screen -r
-- To kill all the screens: pkill screen
+- Detach: Ctrl + A, then D (for tmux Ctrl+B, then D)
+- To go back: `screen -r your_screen_name` or `tmux attach -t your_screen_name`
+- To kill all the screens: `pkill screen` or `tmux kill-server`
+
+
 
 ## Useful Commands:
 - `git pull`: pulls from the repository
 - `git status`: checks if cloned repo is up to date
-- `screen -ls`: shows all the running screens in ubuntu
+- `screen -ls` or `tmux ls`: shows all the running screens in ubuntu
 - `htop`: task manager diagnostic screen
 
 ## CAUTION
