@@ -41,7 +41,7 @@ pip install -r requirements.txt
 - `screen -S your_screen_name` or `tmux new -s your_screen_name`
 
 ## Step 2: Activate the Virtual Environment
-- `source venv/bin/activate`
+- `source venv/bin/activate` or `conda activate env_name`
 - `python main.py`
 
 ## Step 3: To detach and return to screen:
