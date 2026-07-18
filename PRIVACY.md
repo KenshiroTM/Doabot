@@ -16,9 +16,9 @@ Doabot is a Discord moderation bot created for streamer Doaenel and his communit
 
 Doabot collects only the minimum data necessary for its core functionality. All data is obtained through Discord's official API.
 
-### 2.1 User IDs
+### 2.1 User IDs & Usernames
 - **Purpose**: Track users for the leveling system, ban reversal functionality, and moderation actions.
-- **Examples**: User IDs of banned users (up to 3–5 most recent), user IDs in the leveling database.
+- **Examples**: User IDs and usernames of banned users (up to 3–5 most recent), user IDs and usernames in the leveling database.
 - **Storage**: Stored in local JSON files (`users.json`, `config.json`).
 
 ### 2.2 Server IDs
