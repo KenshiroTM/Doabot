@@ -167,7 +167,7 @@ Doabot collects minimal data necessary for moderation and leveling functionality
 - **Server IDs** — for per-server configuration
 - **Message content** — processed in real-time for anti-spam and auto-moderation only
 
-No message content is permanently stored. See our full [Privacy Policy](../../../home/kenshirotm/Downloads/README/PRIVACY.md) and [Terms of Service](../../../home/kenshirotm/Downloads/README/TERMS.md).
+No message content is permanently stored. See our full [Privacy Policy](../../../home/kenshirotm/Downloads/PRIVACY.md) and [Terms of Service](../../../home/kenshirotm/Downloads/TERMS.md).
 
 ---
 
