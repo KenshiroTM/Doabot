@@ -47,7 +47,7 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 
 | Data Type | Purpose |
 |-----------|---------|
-| User IDs | Ban reversal tracking, leveling system, moderation logs |
+| User IDs & usernames | Ban reversal tracking, leveling system, moderation logs |
 | Server ID | Hardcoded server restriction — bot operates exclusively in Doaenel's Discord server and refuses all events from other servers |
 | Message content (real-time) | Anti-spam filtering, auto-moderation, command processing |
 | Role IDs | Automatic role assignment in the leveling system |
