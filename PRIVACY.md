@@ -67,7 +67,7 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 | Data Type | Retention Period |
 |-----------|-----------------|
 | User IDs (leveling) | Until the user is removed from the server or data is manually cleared |
-| User IDs (bans) | Up to 3–5 most recent bans; older entries are overwritten |
+| User IDs (bans) & usernames | Up to 3–5 most recent bans; older entries are overwritten |
 | Message content (expose) | Automatically deleted after the configured `expose_delete_hours` |
 
 ---
