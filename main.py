@@ -14,7 +14,6 @@ import warns.warnsScript
 
 #cogs for function classification
 from Cogs.automod import Automod
-from Cogs.chatbot import Chatbot
 from Cogs.moderation import Moderation
 from Cogs.leveling import Leveling
 from Cogs.logging import Logging
@@ -81,7 +80,6 @@ class Bot(commands.Bot):
         await self.add_cog(Leveling(self))
         await self.add_cog(Logging(self))
         await self.add_cog(Config(self))
-        await self.add_cog(Chatbot(self))
         await self.add_cog(Linkfixer(self)) # adding cogs in the script
 
         for guild in bot.guilds: # this code checks and cleans up any user that left the server on startup
