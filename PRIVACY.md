@@ -16,9 +16,9 @@ Doabot is a Discord moderation bot created for streamer Doaenel and his communit
 
 Doabot collects only the minimum data necessary for its core functionality. All data is obtained through Discord's official API.
 
-### 2.1 User IDs
+### 2.1 User IDs & Usernames
 - **Purpose**: Track users for the leveling system, ban reversal functionality, and moderation actions.
-- **Examples**: User IDs of banned users (up to 3–5 most recent), user IDs in the leveling database.
+- **Examples**: User IDs and usernames of banned users (up to 3–5 most recent), user IDs and usernames in the leveling database.
 - **Storage**: Stored in local JSON files (`users.json`, `config.json`).
 
 ### 2.2 Server IDs
@@ -47,7 +47,7 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 
 | Data Type | Purpose |
 |-----------|---------|
-| User IDs | Ban reversal tracking, leveling system, moderation logs |
+| User IDs & usernames | Ban reversal tracking, leveling system, moderation logs |
 | Server ID | Hardcoded server restriction — bot operates exclusively in Doaenel's Discord server and refuses all events from other servers |
 | Message content (real-time) | Anti-spam filtering, auto-moderation, command processing |
 | Role IDs | Automatic role assignment in the leveling system |
@@ -67,7 +67,7 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 | Data Type | Retention Period |
 |-----------|-----------------|
 | User IDs (leveling) | Until the user is removed from the server or data is manually cleared |
-| User IDs (bans) | Up to 3–5 most recent bans; older entries are overwritten |
+| User IDs (bans) & usernames | Up to 3–5 most recent bans; older entries are overwritten |
 | Message content (expose) | Automatically deleted after the configured `expose_delete_hours` |
 
 ---
