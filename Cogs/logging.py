@@ -30,7 +30,7 @@ class Logging(commands.Cog, name="logging"):
             channel = self.bot.get_channel(self.bot.logging_channel)
             await channel.send(embed=embed)
 
-    #message edit listener
+    #message edit listenera
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         if before.author.bot:

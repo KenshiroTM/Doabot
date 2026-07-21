@@ -29,7 +29,10 @@ prefix = load_cfg(cfg_name)["prefix"]
 
 class Bot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=prefix, intents = discord.Intents.all(), owner_id=383722279089078272,)
+        intents = discord.Intents.default()
+        intents.members = True # for guild member fetching
+        intents.message_content = True # for message content
+        super().__init__(command_prefix=prefix, intents = intents, owner_id=383722279089078272,)
 
         self.logging_on = load_cfg(cfg_name)["logging_on"]
         self.logging_channel = load_cfg(cfg_name)["logging_channel"]
