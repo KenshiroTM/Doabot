@@ -6,7 +6,6 @@ import discord
 from discord.ext import commands
 
 import jsonChecker
-import levelingFiles.levelingScript
 import warns.warnsScript
 # imports above ^^^^
 
@@ -15,13 +14,9 @@ import warns.warnsScript
 #cogs for function classification
 from Cogs.automod import Automod
 from Cogs.moderation import Moderation
-from Cogs.leveling import Leveling
-from Cogs.logging import Logging
-from Cogs.config import Config
 from Cogs.linkfixer import Linkfixer
-
+from Cogs.config import Config
 from jsonreader import load_cfg, cfg_name
-from levelingFiles.levelingScript import leveling_cfg, users_cfg
 load_dotenv() # token in a variable
 
 jsonChecker.mass_check_json()
@@ -34,26 +29,18 @@ class Bot(commands.Bot):
         intents.message_content = True # for message content
         super().__init__(command_prefix=prefix, intents = intents, owner_id=383722279089078272,)
 
-        self.logging_on = load_cfg(cfg_name)["logging_on"]
-        self.logging_channel = load_cfg(cfg_name)["logging_channel"]
         self.mute_amount = load_cfg(cfg_name)["mute_amount"]
         self.delete_msg_days = load_cfg(cfg_name)["delete_msg_days"]
         self.server_id = load_cfg(cfg_name)["server_id"]
         self.expose_delete_hours = load_cfg(cfg_name)["expose_delete_hours"]
-        self.bot_read_msg = load_cfg(cfg_name)["bot_read_msg"]
-
-        self.chatbot_on = load_cfg(cfg_name)["chatbot_on"]
-        self.bot_max_tokens = load_cfg(cfg_name)["bot_max_tokens"]
 
         self.blacklist_on = load_cfg(cfg_name)["blacklist_on"]
-        self.leveling_on = load_cfg(leveling_cfg)["leveling_on"]
 
         self.linkfixer_on = load_cfg(cfg_name)["linkfixer_on"]
         self.instagram_fixer_idx = load_cfg(cfg_name)["instagram_fixer_idx"]
 
         self.antispam_on = load_cfg(cfg_name)["antispam_on"]
         self.spammer_timeout = load_cfg(cfg_name)["spammer_timeout"]
-        self.user_levels = load_cfg(users_cfg)
 
     # on command errors
     async def on_command_error(self, ctx, error):
@@ -80,22 +67,16 @@ class Bot(commands.Bot):
     async def on_ready(self):
         await self.add_cog(Automod(self))
         await self.add_cog(Moderation(self))
-        await self.add_cog(Leveling(self))
-        await self.add_cog(Logging(self))
-        await self.add_cog(Config(self))
         await self.add_cog(Linkfixer(self)) # adding cogs in the script
+        await self.add_cog(Config(self))
 
         for guild in bot.guilds: # this code checks and cleans up any user that left the server on startup
             if bot.server_id == guild.id:
                 #cleaning users
                 warn_data = load_cfg(warns.warnsScript.warns_name)
-
-                for leveling_user in self.user_levels["users"]:
-                    if not bot.get_user(leveling_user["user_id"]):
-                        levelingFiles.levelingScript.remove_user(leveling_user["user_id"], self.user_levels) # if it does not find user in server with saved userid from config
                 for warn_user in warn_data["users"]:
                     if not bot.get_user(warn_user["user_id"]):
-                        warns.warnsScript.remove_user(warn_user["user_id"]) #same as with leveling
+                        warns.warnsScript.remove_user(warn_user["user_id"])
                 print("clearing non existent users...")
         #checks for users
 

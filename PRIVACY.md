@@ -17,9 +17,9 @@ Doabot is a Discord moderation bot created for streamer Doaenel and his communit
 Doabot collects only the minimum data necessary for its core functionality. All data is obtained through Discord's official API.
 
 ### 2.1 User IDs & Usernames
-- **Purpose**: Track users for the leveling system, ban reversal functionality, and moderation actions.
-- **Examples**: User IDs and usernames of banned users (up to 3–5 most recent), user IDs and usernames in the leveling database.
-- **Storage**: Stored in local JSON files (`users.json`, `config.json`).
+- **Purpose**: Track users for the ban reversal functionality and moderation actions.
+- **Examples**: User IDs and usernames of banned users (up to 3–5 most recent).
+- **Storage**: Stored in local JSON files (`config.json`).
 
 ### 2.2 Server IDs
 - **Purpose**: Bot is hardcoded to operate exclusively in Doaenel's Discord server (ID: `713475017957965945`). The server ID acts as a hard lock — the bot will not respond to events or commands in any other server.
@@ -29,10 +29,6 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 - **Purpose**: Real-time processing for anti-spam detection, auto-moderation, and command parsing.
 - **Important**: Message content is **processed in real-time only** and is **not permanently stored**.
 - **Exception**: The `expose` command temporarily collects deleted message metadata for moderation purposes. These are automatically deleted after the configured duration (default: 1 hour).
-
-### 2.4 Role IDs
-- **Purpose**: Leveling system — assign roles when users reach specific levels.
-- **Storage**: Stored in `leveling.json`.
 
 ### 2.5 What We Do NOT Collect
 - We do **not** collect email addresses, passwords, or personal information outside of Discord.
@@ -45,12 +41,11 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 
 ## 3. How We Use Your Data
 
-| Data Type | Purpose |
-|-----------|---------|
-| User IDs & usernames | Ban reversal tracking, leveling system, moderation logs |
+| Data Type | Purpose                                                                                                                     |
+|-----------|-----------------------------------------------------------------------------------------------------------------------------|
+| User IDs & usernames | Ban reversal tracking, moderation                                                                                           |
 | Server ID | Hardcoded server restriction — bot operates exclusively in Doaenel's Discord server and refuses all events from other servers |
-| Message content (real-time) | Anti-spam filtering, auto-moderation, command processing |
-| Role IDs | Automatic role assignment in the leveling system |
+| Message content (real-time) | Anti-spam filtering, auto-moderation, command processing                                                                    |
 
 ---
 
@@ -66,7 +61,6 @@ Doabot collects only the minimum data necessary for its core functionality. All 
 
 | Data Type | Retention Period |
 |-----------|-----------------|
-| User IDs (leveling) | Until the user is removed from the server or data is manually cleared |
 | User IDs (bans) & usernames | Up to 3–5 most recent bans; older entries are overwritten |
 | Message content (expose) | Automatically deleted after the configured `expose_delete_hours` |
 
@@ -82,7 +76,7 @@ We do **not** sell, trade, rent, or share user data with any third parties. Data
 
 As a user of Doaenel's Discord server, you have the right to:
 
-- **Request data deletion**: Contact the bot owner. Note that most data (leveling progress, moderation logs) is dynamically generated and tied to active server participation.
+- **Request data deletion**: Contact the bot owner. Note that most data is dynamically generated and tied to active server participation.
 - **Access your data**: Request a copy of the data we hold about you.
 
 To exercise these rights, contact:

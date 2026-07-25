@@ -1,6 +1,6 @@
 # Doabot
 
-Doabot is a Discord bot focused on **server moderation**, **anti-spam protection**, and **community engagement** through a leveling system. Originally created for the streamer Doaenel, the bot is used only in his community server.
+Doabot is a Discord bot focused on **server moderation**, **anti-spam protection**. Originally created for the streamer Doaenel, the bot is used only in his community server.
 
 ---
 
@@ -22,23 +22,9 @@ Doabot is a Discord bot focused on **server moderation**, **anti-spam protection
 - `bl` — Blacklist management (view, add, remove)
 - `link` — Anti-spam link blacklist system
 
-### Leveling System
-- `lvl` — Check your level or another user's level
-- `lvlroles` — View configured level-based roles
-- `setbasevlexp` — Set base EXP for level 1
-- `setlvl` — Manually set a user's level
-- `setlvlscaling` — Set level scaling factor
-- `setxpgain` — Set EXP gained per message
-
 ### Utility
 - `linkfix` / `swap` — Link fixer functionality
 - `setserver` — Restrict bot to a specific server (owner only)
-
----
-
-## Model Used
-
-- **Cohere**: `command-a-03-2025` (for AI chatbot functionality)
 
 ---
 
@@ -87,40 +73,13 @@ Edit `jsonChecker.py` if you want to add extra variables or modify the JSON stru
   "delete_msg_days": 7,
   "mute_amount": 2,
   "prefix": "^",
-  "logging_channel": 1264171411296227370,
-  "logging_on": false,
   "blacklist_on": false,
-  "chatbot_on": false,
   "linkfixer_on": false,
   "antispam_on": true,
   "spammer_timeout": 20,
-  "bot_max_tokens": 150,
   "last_bans": [],
-  "bot_read_msg": 10,
   "expose_delete_hours": 1,
   "instagram_fixer_idx": 0
-}
-```
-
-**Leveling config (`leveling.json`):**
-```json
-{
-  "leveling_on": false,
-  "exp_per_msg": 10,
-  "level_scaling": 1.2,
-  "base_lvl_exp": 100,
-  "level_roles": [
-    {"level_required": 5, "role_id": 1353471576263360704}
-  ]
-}
-```
-
-**Users data (`users.json`):**
-```json
-{
-  "users": [
-    {"user_id": 383722279089078272, "level": 4, "exp": 200, "exp_to_next": 206}
-  ]
 }
 ```
 
@@ -162,8 +121,8 @@ python main.py
 
 ## Data & Privacy
 
-Doabot collects minimal data necessary for moderation and leveling functionality:
-- **User IDs** — for ban reversal tracking and leveling system
+Doabot collects minimal data necessary for moderation functionality:
+- **User IDs** — for ban reversal tracking
 - **Server IDs** — for per-server configuration
 - **Message content** — processed in real-time for anti-spam and auto-moderation only
 

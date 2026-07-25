@@ -15,7 +15,6 @@ By participating in Doaenel's Discord server where Doabot operates, you agree to
 Doabot is a private Discord moderation bot operating exclusively in Doaenel's Discord server. It provides:
 - Server moderation tools (ban, mute, warn, purge, etc.)
 - Anti-spam and auto-moderation features
-- A leveling system with role rewards
 - Link fixing utilities
 
 Doabot is hardcoded to function only in a single Discord server and will not respond to events or commands in any other server.
@@ -53,7 +52,7 @@ You may not use Doabot to:
 
 By using Doabot, you acknowledge that:
 - The bot processes message content in real-time for moderation and anti-spam purposes
-- User IDs may be stored for leveling and moderation functionality
+- User IDs may be stored for moderation functionality
 - No message content is permanently stored
 
 See our [Privacy Policy](PRIVACY.md) for full details.
