@@ -1,16 +1,10 @@
 import os
-
-from discord.ext.commands import BotMissingPermissions
 from dotenv import load_dotenv
 import discord
 from discord.ext import commands
-
 import jsonChecker
 import levelingFiles.levelingScript
 import warns.warnsScript
-# imports above ^^^^
-
-# custom function imports
 
 #cogs for function classification
 from Cogs.automod import Automod
