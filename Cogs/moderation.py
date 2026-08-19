@@ -1,14 +1,17 @@
-from datetime import datetime, timezone
+# Cogs/moderation.py
 import asyncio
+from datetime import datetime, timedelta, timezone
 
+import discord
 from discord.ext import commands
-import re
 
-import embedMaker
-from warns import warnsScript
-from jsonreader import cfg_name, load_cfg, save_cfg
+from utils import EmbedMaker
+from utils.checks import check_server_id
+from utils.discord_helpers import parse_user_id, resolve_member, resolve_user
+from config_helpers.warns import add_warn, get_warns, remove_user_warn_data
+from config_helpers.bans import get_last_bans, get_ban_by_position
 
-class Moderation(commands.Cog, name = "moderation"):
+class Moderation(commands.Cog, name="moderation"):
 
     def __init__(self, bot):
         self.bot = bot
@@ -19,202 +22,227 @@ class Moderation(commands.Cog, name = "moderation"):
         self.min_purge_msgs = 1
         self.max_purge_msgs = 100
 
-    @commands.Cog.listener()
-    async def on_message_delete(self, msg):
-        if msg.author.bot:
-            return
-        if msg.author.id in self.expose_messages:
-            self.expose_messages[msg.author.id]["task"].cancel()
+    async def add_to_expose(self, message):
+        if message.author.id in self.expose_messages:
+            self.expose_messages[message.author.id]["task"].cancel()
+
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=self.bot.expose_delete_hours)
+
         async def delete_after():
             try:
-                await asyncio.sleep(self.bot.expose_delete_hours)
-                self.expose_messages.pop(msg.author.id)
+                time = self.bot.expose_delete_hours * 3600 # making it hours there for sleeping
+                await asyncio.sleep(time)
+                self.expose_messages.pop(message.author.id, None)
             except asyncio.CancelledError:
                 pass
-        task=asyncio.create_task(delete_after())
-        date=datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S")
-        self.expose_messages[msg.author.id] = {"task": task, "content": msg.content, "date": date}
 
-    @commands.command(name="expose", brief="Track and collect deleted message of an user.",
-                  help="Tracks and collects deleted message of a specified user to expose them. Provide a mention or ID of the user to start tracking their deleted message.")
+        task = asyncio.create_task(delete_after())
+        date = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M:%S")
+        self.expose_messages[message.author.id] = {
+            "task": task,
+            "content": message.content,
+            "date": date,
+            "expires_at": expires_at,
+        }
+
+    @commands.hybrid_command(name="expose", brief="Display exposed deleted message of a user.",
+        help="Displays the most recent deleted message of the specified user if they have any."
+    )
+    @discord.app_commands.describe(
+        member="User to show expose for (mention or ID). Defaults to command user if omitted."
+    )
+    @check_server_id
     @commands.has_permissions(ban_members=True)
-    async def expose_user(self, ctx, member=commands.parameter(description="User to ban (mention or ID).", default=None)):
-        if member is None:
-            user_id = ctx.author.id
-        else:
-            user_id = int(re.sub("[<>@]", "", member))
-        member = ctx.guild.get_member(int(user_id))
-        if member.id in self.expose_messages:
-            exposed_message = self.expose_messages[member.id]["content"]
-            delete_hours = self.bot.expose_delete_hours/3600
-            date = self.expose_messages[member.id]["date"]
-            embed = embedMaker.create_expose_embed(member, exposed_message, delete_hours, date)
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(f"{member.name} has nothing to be exposed of!")
+    async def expose(self, ctx: commands.Context, member: str = commands.parameter(default=None, description="User to expose (mention or ID). Defaults to self if omitted.")):
+        target = await resolve_user(self.bot, member) if member else ctx.author
 
-    @commands.command(name="ban", brief="Ban a user by mention or ID.",
-    help="Bans a user from the server using either a mention or a user ID.\n"
-         "You can optionally provide a reason. If none is given, 'No reason provided' will be used.") #help when `help ban`, brief when `help`
-    @commands.has_permissions(ban_members=True)  # * means many words for a reason
-    @commands.bot_has_permissions(ban_members=True)
-    async def ban_user(self, ctx, member=commands.parameter(description="User to ban (mention or ID)."),
-                       *, reason=commands.parameter(default="No reason provided", description="Reason for the ban.")):  # = means it's not necessary to fill and gets "no reason provided" instead
-        userid = re.sub("[<>@]", "", member)  # userid
-        if int(userid):
-            banned_member = await self.bot.fetch_user(int(userid))
-            await ctx.guild.ban(banned_member, delete_message_days=self.bot.delete_msg_days)
-            await ctx.send(f"Successfully banned: **{banned_member.name}**, reason: {reason}")
-        else:
-            ctx.send("I can only ban mentions or ids!")
+        exposed = self.expose_messages.get(target.id)
+        if exposed is None:
+            await ctx.send(f"{target.name} has nothing to be exposed of!")
+            return
+        embed = EmbedMaker.create_expose_embed(target, exposed["content"], exposed["expires_at"], exposed["date"])
+        await ctx.send(embed=embed)
 
-    @commands.command(name="unban", brief="Unban a user by ID.",
-    help="Unbans a previously banned user using their Discord ID.\n"
-         "You can optionally provide a reason. If none is given, 'No reason provided' will be used.")  # change to hybrid command later on
+    @commands.hybrid_command(name="ban", brief="Ban a user by mention or ID.",
+        help="Bans a user from the server using either a mention or a user ID.\n"
+             "You can optionally provide a reason. If none is given, 'No reason provided' will be used."
+    )
+    @check_server_id
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def unban_user(self, ctx, userid=commands.parameter(description="ID of the user to unban."),
-                         *, reason=commands.parameter(default="No reason provided", description="Reason for the unban.")):
-        if int(userid):
-            user = await self.bot.fetch_user(int(userid))
-            await ctx.guild.unban(user)
-            await ctx.send(f"Successfully unbanned {user.name}, Reason: {reason}")
-        else:
-            ctx.send("I can only unban user ids!")
+    async def ban_user(self, ctx,
+    member: str = commands.parameter(description="User to ban (mention or ID)."),
+    *, reason: str = commands.parameter(default="No reason provided", description="Reason for the ban.")):
+        target = await resolve_user(self.bot, member)
 
-    @commands.command(name="banrev", brief="Revert a recent ban by position (1st, 2nd, or 3rd).",
-    help="Unbans a user based on their position in the recent bans list.\n"
-         "Position 1 = most recent, 2 = second most recent, 3 = third most recent.\n\n"
-         "**Parameters:**\n"
-         "`second_arg` (optional): Position in recent bans to revert (1–3). Defaults to 1.")
+        try:
+            await ctx.guild.fetch_ban(target)
+            await ctx.send("User is already banned!")
+            return
+        except discord.NotFound:
+            pass
+        await ctx.guild.ban(target, delete_message_days=self.bot.delete_msg_days, reason=reason)
+        await ctx.send(f"Successfully banned: **{target.name}**, reason: {reason}")
+
+    @commands.hybrid_command(name="unban", brief="Unban a user by ID.",
+        help="Unbans a previously banned user using their Discord ID.\n"
+             "You can optionally provide a reason. If none is given, 'No reason provided' will be used."
+    )
+    @check_server_id
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def ban_rev(self, ctx, second_arg=commands.parameter(default=1, description="Position in recent bans list (1 = most recent, up to 3)")):
-        data = load_cfg(cfg_name)
-        if self.min_revert_users <= second_arg <= self.max_revert_users:
-            array_place = len(data["last_bans"]) - second_arg
+    async def unban_user(self, ctx, userid: str = commands.parameter(description="ID of the user to unban."),
+    *, reason: str = commands.parameter(default="No reason provided", description="Reason for the unban.")):
+        target = await resolve_user(self.bot, userid)
 
-            userid = data["last_bans"][array_place]["userid"] #userid of user from recent bans config file
-            user = await self.bot.fetch_user(int(userid))
-            await ctx.guild.unban(user)
+        try:
+            await ctx.guild.unban(target, reason=reason)
+        except discord.NotFound:
+            await ctx.send("User is not banned on this server!")
+            return
 
-            data["last_bans"].pop(array_place)
-            save_cfg(cfg_name, data)
+        await ctx.send(f"Successfully unbanned {target.name}, Reason: {reason}")
 
-            await ctx.send(f"Successfully reverted the ban of {user.name}")
-        else:
-            await ctx.send("You can unban up to last 3 users")
-            
-    @commands.command(name="showbans", brief="Display the 3 most recent bans.",
-    help="Shows the 3 most recently banned users with their usernames and IDs.")
+    @commands.hybrid_command(name="banrev", brief="Revert a recent ban by position (1st, 2nd, or 3rd).",
+        help="Unbans a user based on their position in the recent bans list.\n"
+             "Position 1 = most recent, 2 = second most recent, 3 = third most recent.\n\n"
+             "**Parameters:**\n"
+             "`second_arg` (optional): Position in recent bans to revert (1–3). Defaults to 1."
+    )
+    @check_server_id
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
+    async def ban_rev(self, ctx, second_arg: int = commands.parameter(default=1, description="Position in recent bans list (1 = most recent, up to 3)")):
+
+        if not (self.min_revert_users <= second_arg <= self.max_revert_users):
+            await ctx.send(f"You can only revert up to the last {self.max_revert_users} bans!")
+            return
+
+        record = get_ban_by_position(second_arg)  # peek only - don't remove yet
+        if record is None:
+            await ctx.send("There aren't that many recent bans on record!")
+            return
+
+        target = await resolve_user(self.bot, str(record["userid"]))
+
+        await ctx.guild.unban(target)
+        # last_bans is updated centrally in the dispatcher cog (on_member_unban)
+        await ctx.send(f"Successfully reverted the ban of {target.name}")
+
+    @commands.hybrid_command(name="showbans", brief="Display the 3 most recent bans.",
+                       help="Shows the 3 most recently banned users with their usernames and IDs.")
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
     async def show_bans(self, ctx):
-        data = load_cfg(cfg_name)
-        last_bans = data["last_bans"]
-        banned_users = "`"
-        ctr = len(data["last_bans"])
-        for user in last_bans:
-            banned_users += "\n("+str(ctr)+") username: "+user["name"]+", userid: "+str(user["userid"])
-            ctr -= 1
-        await ctx.send("List of recently banned users: "+banned_users+"`")
+        last_bans = get_last_bans()
+        if not last_bans:
+            await ctx.send("No recent bans on record!")
+            return
 
-    @commands.command(name="mute", brief="Mute a user by ID or mention.",
-    help="Times out a user for a number of hours.\n\n"
-         "**Parameters:**\n"
-         "`member`: User mention or ID\n"
-         "`amount`: Number of hours to mute (must be > 0)")
+        lines = [
+            f"({position}) username: {user['name']}, userid: {user['userid']}"
+            for position, user in enumerate(reversed(last_bans), start=1)
+        ]
+        await ctx.send("List of recently banned users:\n```\n" + "\n".join(lines) + "\n```")
+
+    @commands.hybrid_command(name="timeout", brief="Mute a user by ID or mention.",
+        help="Times out a user for a number of hours.\n\n"
+             "**Parameters:**\n"
+             "`member`: User mention or ID\n"
+             "`amount`: Number of hours to timeout (must be > 0)"
+    )
+    @check_server_id
     @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def mute_user(self, ctx, member = commands.parameter(description="User mention or ID to timeout"),
-                        amount = commands.parameter(default=None, description="Duration of timeout in hours (must be > 0)")):
-        userid = re.sub("[<>@]", "", member)  # userid
+    @commands.bot_has_permissions(moderate_members=True)
+    async def timeout_user(self, ctx, member: str = commands.parameter(description="User mention or ID to timeout"), amount: int = commands.parameter(
+        default=None, description="Duration of timeout in hours (must be > 0)")):
         if amount is None:
-            amount = self.bot.mute_amount
-        if not int(amount) and int(amount)>0:
+            amount = self.bot.timeout_amount
+        if amount <= 0:
             await ctx.send("Timeout amount must be a number bigger than 0!")
-        if int(userid):
-            timed_member = ctx.guild.get_member(int(userid))
-            if timed_member.timed_out_until is None:
-                await timed_member.timeout(datetime.timedelta(hours = amount))
-                await ctx.send(f"Successfully timed out: **{timed_member.name}** for {amount} hours!")
-            else:
-                await ctx.send("User already timed out!")
-        else:
-            await ctx.send("I can only timeout mentions or ids!")
+            return
 
-    @commands.command(name="unmute", brief="Un-mute a user by ID or mention.",
-    help="Removes timeout from a user.\n\n"
-         "**Parameters:**\n"
-         "`member`: User mention or ID to remove timeout from")
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def un_mute_user(self, ctx, member = commands.parameter(description="User mention or ID to untimeout")):
-        userid = re.sub("[<>@]", "", member)  # userid
-        if int(userid):
-            timed_member = ctx.guild.get_member(int(userid))
-            await timed_member.timeout(None)
-            await ctx.send(f"Successfully removed timeout from: **{timed_member.name}**")
-        else:
-            await ctx.send("I can only remove timeout from mentions or ids!")
+        target = await resolve_member(ctx, member)
 
-    @commands.command(name="warns", brief="Show user's warns.",
-    help="Displays the number of warnings a user has.")
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def user_warns(self, ctx, member=commands.parameter(description="Mention or ID of the user whose warnings you want to view.")):
-        if member is None:
-            user_id = ctx.author.id
-        else:
-            user_id = re.sub("[<>@]", "", member)
-        if int(user_id):
-            user_warns = warnsScript.get_warns(int(user_id))
-            if user_warns is not None:
-                member = ctx.guild.get_member(int(user_id))
-                embed = embedMaker.create_warns_embed(member, user_warns)
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send("User has no warns!")
-        else:
-            await ctx.send("type warn or warn with mention!")
-            
-    @commands.command(name="warn", brief="Warn a user.",
-    help="Adds a warning to a user with an optional description explaining the reason.")
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def warn(self, ctx, member=commands.parameter(description="Mention or ID of the user to warn."),
-                   description=commands.parameter(description="Reason or context for the warning. Defaults to 'No description provided'.", default="No description provided.")):
-        userid = re.sub("[<>@]", "", member)  # userid
-        if int(userid):
-            warnsScript.add_warn(int(userid), description)
-            member = ctx.guild.get_member(int(userid))
-            await ctx.send(f"User {member.name} was warned, **{description}**")
-        else:
-            await ctx.send("I can only warn mentions or ids!")
+        if target.timed_out_until is not None:
+            await ctx.send("User already timed out!")
+            return
 
-    @commands.command(name="clearwarns", brief="Clear user's warns.",
-    help="Removes all warning records from the specified user.")
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_permissions(ban_members=True)
-    async def clear_user_warns(self, ctx, member=commands.parameter(description="Mention or ID of the user whose warnings should be cleared.")):
-        userid = re.sub("[<>@]", "", member)  # userid
-        if int(userid):
-            warnsScript.remove_user(int(userid))
-            member = ctx.guild.get_member(int(userid))
-            await ctx.send(f" Cleared warns of: {member.name}")
-        else:
-            await ctx.send("I can only clearwarn mentions or ids!")
+        await target.timeout(timedelta(hours=amount))
+        await ctx.send(f"Successfully timed out: **{target.name}** for {amount} hours!")
 
-    @commands.command(name="purge", brief="Delete recent messages.", help="Deletes between 1 and 100 recent messages from the current channel.")
+    @commands.hybrid_command(name="untimeout", brief="Un-mute a user by ID or mention.",
+        help="Removes timeout from a user.\n\n"
+             "**Parameters:**\n"
+             "`member`: User mention or ID to remove timeout from"
+    )
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(moderate_members=True)
+    async def un_timeout_user(self, ctx, member: str = commands.parameter(description="User mention or ID to untimeout")):
+        target = await resolve_member(ctx, member)
+
+        await target.timeout(None)
+        await ctx.send(f"Successfully removed timeout from: **{target.name}**")
+
+    @commands.hybrid_command(name="warns", brief="Show user's warns.", help="Displays the number of warnings a user has.")
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    async def user_warns(self, ctx, member: str = commands.parameter(default=None, description="Mention or ID of the user whose warnings you want to view.")):
+        target = await resolve_member(ctx, member) if member else ctx.author
+
+        warns = get_warns(target.id)
+        if not warns:
+            await ctx.send("User has no warns!")
+            return
+
+        embed = EmbedMaker.create_warns_embed(target, warns)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name="warn", brief="Warn a user.", help="Adds a warning to a user with an optional description explaining the reason.")
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    async def warn(self, ctx, member: str = commands.parameter(description="Mention or ID of the user to warn."), *, description: str = commands.parameter(
+    default="No description provided.", description="Reason or context for the warning.")):
+        target = await resolve_member(ctx, member)
+
+        add_warn(target.id, description)
+        await ctx.send(f"User {target.name} was warned, **{description}**")
+
+    @commands.hybrid_command(name="clearwarns", brief="Clear user's warns.", help="Removes all warning records from the specified user.")
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    async def clear_user_warns(self, ctx, member: str = commands.parameter(description="Mention or ID of the user whose warnings should be cleared.")):
+        user_id = parse_user_id(member)
+
+        removed = remove_user_warn_data(user_id)
+        target = ctx.guild.get_member(user_id)
+        name = target.name if target else str(user_id)
+
+        if removed:
+            await ctx.send(f"Cleared warns of: {name}")
+        else:
+            await ctx.send(f"{name} has no warns to clear!")
+
+    @commands.hybrid_command(name="purge", brief="Delete recent messages.", help="Deletes between 1 and 100 recent messages from the current channel.")
+    @check_server_id
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge_messages(self, ctx, amount=commands.parameter(description="Number of messages to delete (1-100)")):
-        if self.min_purge_msgs <= int(amount) <= self.max_purge_msgs:
-            await ctx.channel.purge(limit=int(amount)+1)
-            await ctx.send(f"Deleted {amount} messages!", delete_after=3)
+    async def purge_messages(self, ctx, amount: int = commands.parameter(description="Number of messages to delete (1-100)")):
+        if not (self.min_purge_msgs <= amount <= self.max_purge_msgs):
+            await ctx.send(f"Amount must be between {self.min_purge_msgs} and {self.max_purge_msgs}!")
+            return
+        if ctx.interaction:
+            await ctx.defer(ephemeral=False)
+        purge_limit = amount + 1
+        deleted = await ctx.channel.purge(limit=purge_limit)
+        count = len(deleted) - 1
+        try:
+            msg = await ctx.channel.send(f"Deleted **{count}** messages!")
+            await asyncio.sleep(5)
+            await msg.delete()
+        except discord.NotFound:
+            pass
 
-    @commands.command(name="sync", brief="Sync slash commands with the bot.", help="Syncs hybrid (slash) commands with the bot. Restricted to bot owner only.")
-    @commands.is_owner()  # sync, use only if update slash commands
-    async def sync(self, ctx: commands.Context):
-        synced = await self.bot.tree.sync(guild=ctx.guild)
-        await ctx.send(f"Synced {len(synced)} command(s)")
+async def setup(bot):
+    await bot.add_cog(Moderation(bot))

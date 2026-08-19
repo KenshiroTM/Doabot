@@ -32,10 +32,10 @@ Doabot is a Discord bot focused on **server moderation**, **anti-spam protection
 
 | Component | Version |
 |-----------|---------|
-| Python | 3.12 |
-| [discord.py](https://pypi.org/project/discord.py/) | 2.3.2 |
-| [python-dotenv](https://pypi.org/project/python-dotenv/) | 1.0.1 |
-| [cohere](https://pypi.org/project/cohere/) | 5.15 |
+| Python | 3.12    |
+| [discord.py](https://pypi.org/project/discord.py/) | 2.7.1   |
+| [python-dotenv](https://pypi.org/project/python-dotenv/) | 1.0.1   |
+| [cohere](https://pypi.org/project/cohere/) | 5.15    |
 
 ---
 
@@ -71,7 +71,7 @@ Edit `jsonChecker.py` if you want to add extra variables or modify the JSON stru
   "Version": "1.0.0",
   "server_id": 713475017957965945,
   "delete_msg_days": 7,
-  "mute_amount": 2,
+  "timeout_amount": 2,
   "prefix": "^",
   "blacklist_on": false,
   "linkfixer_on": false,
