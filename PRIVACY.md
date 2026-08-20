@@ -57,8 +57,9 @@ We do not sell, trade, rent, or share user data with any third parties. Data is 
 
 ## 7. Your Rights
 As a user of Doaenel's Discord server, you have the right to:
-*   **Request data deletion:** Contact the bot owner. Note that most data is dynamically generated and tied to active server participation.
+*   **Request data deletion:** Contact the bot owner to remove your warning history or ban records. Note that real-time message processing for security (spam/blacklist) cannot be opted out of, as it is essential for server safety.
 *   **Access your data:** Request a copy of the data we hold about you (e.g., your warning history).
+*   **Opt-out of moderation:** Individual opt-out from automated security features is not available. By joining the server, users agree to these moderation practices.
 
 To exercise these rights, contact:
 *   **Discord:** KenshiroTM
