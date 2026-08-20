@@ -26,7 +26,9 @@ class Bot(commands.Bot):
         self.blacklist_on = read_config_key("blacklist_on")
         self.linkfixer_on = read_config_key("linkfixer_on")
         self.antispam_on = read_config_key("antispam_on")
+        self.timekick_on = read_config_key("timekick_on")
 
+        self.timekick_days = read_config_key("timekick_days")
         self.spammer_timeout = read_config_key("spammer_timeout")
         self.expose_delete_hours = read_config_key("expose_delete_hours")
 

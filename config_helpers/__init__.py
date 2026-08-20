@@ -13,9 +13,6 @@ from .blacklist import (
     add_blacklisted_word,
     remove_blacklisted_word,
     get_blacklisted_words,
-    add_blacklisted_link,
-    remove_blacklisted_link,
-    check_scam_links,
 )
 from .bans import (
     add_to_last_bans,

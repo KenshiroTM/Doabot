@@ -15,13 +15,14 @@ json_files = [
         "blacklist_on": False,
         "linkfixer_on": False,
         "antispam_on": False,
+        "timekick_on": False,
+        "timekick_days": 7,
         "spammer_timeout": 4,
         "expose_delete_hours": 1,
     }},
     {"file": "blacklist.json", "defaults": {
         "sensitive": [],
         "insensitive": [],
-        "links": []
     }},
     {"file": "last_bans.json", "defaults": {
         "last_bans": []

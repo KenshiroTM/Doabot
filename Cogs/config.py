@@ -18,18 +18,20 @@ class Config(commands.Cog, name="config"):
         self.max_expose_msg_time = 24
         self.min_spamtimeout = 3
         self.max_spamtimeout = 20
+        self.min_timekick_days = 1
+        self.max_timekick_days = 60
 
     @check_server_id
     @commands.has_permissions(ban_members=True)
     @commands.hybrid_command(
-        name="muteamount",
+        name="timeoutamount",
         brief="Set default mute duration in hours.",
         help="Defines the default duration (in hours) for mute command."
     )
     @discord.app_commands.describe(
         amount="Default mute duration in hours (minimum 1)"
     )
-    async def muteamount(self, ctx: commands.Context, amount: int):
+    async def timeoutamount(self, ctx: commands.Context, amount: int):
         """Set the default mute duration in hours (minimum 1)."""
         if amount < self.min_muteamount:
             await ctx.send(f"Amount must be at least {self.min_muteamount} hour(s)!")
@@ -96,7 +98,7 @@ class Config(commands.Cog, name="config"):
     @commands.hybrid_command(
         name="linkfixeron",
         brief="Toggle link fixer functionality.",
-        help="Enables or disables the link fix feature for the entire server. Run the help command for more info."
+        help="Enables or disables the link fix feature for the entire server."
     )
     @discord.app_commands.describe()
     async def linkfixeron(self, ctx: commands.Context):
@@ -124,7 +126,7 @@ class Config(commands.Cog, name="config"):
     @commands.hybrid_command(
         name="spamtimeout",
         brief="Set anti-spam timeout.",
-        help="Sets how long (in seconds) a potential spammer stays in cache before being removed. Default is 4."
+        help="Sets how long (in seconds) a potential spammer stays in cache before being removed (seconds between sending same message across channels). Default is 4."
     )
     @discord.app_commands.describe(
         seconds="Timeout in seconds (min 3, max 20)"
@@ -141,6 +143,41 @@ class Config(commands.Cog, name="config"):
 
         self.bot.spammer_timeout = seconds
         await ctx.send(f"Spam timeout set to **{seconds}s**!")
+
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    @commands.hybrid_command(
+        name="timekick",
+        brief="Toggle timekick feature on or off.",
+        help="Enables or disables the timekick feature for the entire server."
+    )
+    @discord.app_commands.describe()
+    async def timekicktoggle(self, ctx: commands.Context):
+        new_state = toggle_config_key("timekick_on")
+        self.bot.timekick_on = new_state
+        await ctx.send(f"Time-kick is now **{'on' if new_state else 'off'}**")
+
+    @check_server_id
+    @commands.has_permissions(ban_members=True)
+    @commands.hybrid_command(
+        name="timekickdays",
+        brief="Set or view timekick duration in days.",
+        help="Sets the minimum account age (in days) required to avoid being kicked from the server. Accepts a numeric value."
+    )
+    @discord.app_commands.describe(
+        days="Duration in days (integer). Leave empty to see current value."
+    )
+    async def timekickdays(self, ctx: commands.Context, days: int = None):
+        if days is None:
+            await ctx.send(f"Current timekick duration: **{self.bot.timekick_days} day(s)**")
+            return
+
+        if not validate_and_write_numeric("timekick_days", days, min_val=self.min_timekick_days, max_val=self.max_timekick_days):
+            await ctx.send(f"Days must be between {self.min_timekick_days} and {self.max_timekick_days}!")
+            return
+
+        self.bot.timekick_days = days
+        await ctx.send(f"Timekick duration set to **{days} day(s)**!")
 
     @commands.is_owner()
     @commands.hybrid_command(

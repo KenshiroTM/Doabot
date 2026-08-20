@@ -1,9 +1,8 @@
 import asyncio
 from discord.ext import commands
 
-from config_helpers import check_blacklist, check_scam_links, get_blacklisted_words, add_blacklisted_word, \
+from config_helpers import check_blacklist, get_blacklisted_words, add_blacklisted_word, \
     remove_blacklisted_word
-from config_helpers.blacklist import get_blacklisted_links, add_blacklisted_link, remove_blacklisted_link
 from utils import check_server_id, EmbedMaker
 
 
@@ -13,7 +12,6 @@ class Automod(commands.Cog, name="automod"):
         self.keyword_match_threshold = 2
         self.potential_spammers = []
         self.blacklisted_words = get_blacklisted_words()
-        self.blacklisted_links = get_blacklisted_links()
 
     async def quick_delete(self, new_spammer):
         try:
@@ -27,7 +25,7 @@ class Automod(commands.Cog, name="automod"):
             pass
 
     async def automod_spam(self, message):
-        if not self.bot.blacklist_on:
+        if not self.bot.antispam_on:
             return
         if message.author.guild_permissions.ban_members:
             return
@@ -81,15 +79,6 @@ class Automod(commands.Cog, name="automod"):
             await message.delete()
             await message.author.ban(
                 reason=f"Banned for using a blacklisted word {blacklisted_msg}",
-                delete_message_days=self.bot.delete_msg_days
-            )
-            return
-        # Check scam links
-        scam_link_msg = check_scam_links(message.content, self.blacklisted_links)
-        if scam_link_msg is not None:
-            await message.delete()
-            await message.author.ban(
-                reason="Suspected for scam link",
                 delete_message_days=self.bot.delete_msg_days
             )
             return
@@ -155,56 +144,6 @@ class Automod(commands.Cog, name="automod"):
         else:
             self.blacklisted_words = get_blacklisted_words()
             await ctx.send("Removed from database!")
-
-    @commands.hybrid_group(
-        name="link",
-        brief="Anti-spam link blacklist system.",
-        help="Manages spam link detection rules."
-    )
-    @check_server_id
-    @commands.bot_has_permissions(ban_members=True)
-    @commands.has_permissions(ban_members=True)
-    async def link(self, ctx):
-        await ctx.send("Use `link show`, `link add`, or `link rm`.")
-
-    @link.command(name="show", help="Shows all blacklisted link rules.")
-    @check_server_id
-    @commands.bot_has_permissions(ban_members=True)
-    @commands.has_permissions(ban_members=True)
-    async def show_links(self, ctx):
-        links = get_blacklisted_links()
-        embed = EmbedMaker.create_scam_links_show_embed(links)
-        await ctx.send(embed=embed)
-
-    @link.command(name="add", help="Adds a new spam link rule.")
-    @check_server_id
-    @commands.bot_has_permissions(ban_members=True)
-    @commands.has_permissions(ban_members=True)
-    async def add_to_links(self, ctx, name: str = commands.parameter(description="Name of the rule."),
-    threshold: int = commands.parameter(description="Keyword match threshold (min 2)."), *, keywords: str = commands.parameter(description="Space-separated keywords.")):
-        keyword_list = [kw.strip() for kw in keywords.split() if kw.strip()]
-        if threshold < self.keyword_match_threshold:
-            await ctx.send("Threshold must be a number not less than 2!")
-            return
-        if not keyword_list:
-            await ctx.send("Please provide at least one keyword!")
-            return
-        if add_blacklisted_link({"name": name, "threshold": threshold, "keywords": keyword_list}):
-            self.blacklisted_links = get_blacklisted_links()
-            await ctx.send("Successfully added a link rule!")
-        else:
-            await ctx.send("Name already in database!")
-
-    @link.command(name="rm", help="Removes a spam link rule by name.")
-    @check_server_id
-    @commands.bot_has_permissions(ban_members=True)
-    @commands.has_permissions(ban_members=True)
-    async def remove_from_links(self, ctx, *, name: str = commands.parameter(description="Name of the link rule to remove.")):
-        if not remove_blacklisted_link(name):
-            await ctx.send("Link rule not found!")
-        else:
-            self.blacklisted_links = get_blacklisted_links()
-            await ctx.send("Successfully removed the link rule!")
 
 async def setup(bot):
     await bot.add_cog(Automod(bot))

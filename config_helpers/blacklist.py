@@ -50,13 +50,11 @@ def _normalize_text(text: str) -> str:
     # Remove spaces (catches spaced slurs aka S L U R)
     text = text.replace(' ', '')
 
-    # Exceptions: keep o, g, n doubled on long repeats (most slurs use these)
-    text = re.sub(r'o{3,}', 'oo', text)
+    # Exceptions: keep g doubled on long repeats (most popular slurs use these)
     text = re.sub(r'g{3,}', 'gg', text)
-    text = re.sub(r'n{3,}', 'nn', text)
 
     # Everything else: 3+ repeats → 1 char (e.g. "iiiii" → "i", "rrrrr" → "r")
-    text = re.sub(r'(.)\1{2,}', r'\1', text)
+    text = re.sub(r'(.)\1+', r'\1', text)
 
     return text
 
@@ -67,16 +65,18 @@ def _normalize_token(token: str) -> str:
     return _normalize_text(token)
 
 
-def _split_by_whitespace(text: str) -> list[str]:
-    """Splits text into tokens by whitespace."""
-    return text.split()
+def _tokenize(text: str) -> list[str]:
+    """Splits text into alphanumeric tokens using regex.
+    This ensures 'code123slur456' is treated as one token,
+    while 'hello slur world' splits into ['hello', 'slur', 'world']."""
+    return re.findall(r'\w+', text)
 
 
 def check_blacklist(message: str, data: dict) -> dict | None:
     """
     Checks message against blacklist words.
     Sensitive: substring match anywhere in text (catches "xxslurxx" "s l u r" "5lur" and all combined).
-    Insensitive: exact token match (whole word only, does not fire false alarm on links, codes etc, requires a slur visible between spaces to work).
+    Insensitive: exact token match (whole word only, does not fire false alarm on links, codes etc).
     """
 
     # --- SENSITIVE: substring match in entire message ---
@@ -94,7 +94,7 @@ def check_blacklist(message: str, data: dict) -> dict | None:
 
     # --- INSENSITIVE: exact token match ---
     insensitive_words = data.get("insensitive", [])
-    tokens = _split_by_whitespace(message)  # Split into words
+    tokens = _tokenize(message)  # Use regex tokenizer instead of split()
 
     for word in insensitive_words:
         normalized_word = _normalize_text(word)
@@ -147,33 +147,3 @@ def get_blacklisted_words(case: str="both") -> list[str] | dict:
         }
     else:
         raise ValueError("Invalid case. Use 'sensitive', 'insensitive', 'both'.")
-
-def add_blacklisted_link(link: dict) -> bool:
-    data = load_file(blacklist_name)
-    for existing_link in data.get("links", []):
-        if existing_link["name"] == link["name"]:
-            return False
-    data.setdefault("links", []).append(link)
-    save_file(blacklist_name, data)
-    return True
-
-def remove_blacklisted_link(link_name: str) -> bool:
-    data = load_file(blacklist_name)
-    for i, existing in enumerate(data.get("links", [])):
-        if existing["name"] == link_name:
-            data["links"].pop(i)
-            save_file(blacklist_name, data)
-            return True
-    return False
-
-def get_blacklisted_links() -> list[dict]:
-    return load_file(blacklist_name).get("links", [])
-
-def check_scam_links(message: str, data: list[dict]) -> str | None:
-    message = message.lower()
-    for link in data:
-        threshold = link.get("threshold", 1)
-        found = sum(1 for keyword in link.get("keywords", []) if keyword.lower() in message)
-        if found >= threshold:
-            return link["name"]
-    return None
