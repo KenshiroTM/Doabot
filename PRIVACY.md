@@ -1,6 +1,6 @@
 # Privacy Policy for Doabot
 
-**Last updated:** 21 August 2026
+**Last updated:** 20 August 2026
 
 ## 1. Introduction
 This Privacy Policy explains how Doabot ("we", "our", "the bot") collects, uses, and protects data when operating within Discord servers. By participating in Doaenel's Discord server where Doabot operates, you agree to the practices described in this policy.
