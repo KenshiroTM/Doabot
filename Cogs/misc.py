@@ -12,7 +12,7 @@ class Misc(commands.Cog, name="misc"):
     @commands.hybrid_command(
         name="speechify",
         brief="Adds a speech bubble to an image and returns it as a GIF",
-        description="Takes an image URL, adds a speech bubble (1-3) with specified coverage ratio and returns as GIF.",
+        description="Takes an image URL, adds a speech bubble (1-2) with specified coverage ratio and returns as GIF.",
     )
     @check_server_id
     async def speechify(self, ctx: commands.Context, image_url: str, bubble_number: int = 1, bubble_height_ratio: float = 0.25):
